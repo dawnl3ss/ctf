@@ -1,0 +1,186 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-11-10 18:51 CET
+Nmap scan report for broker.htb (10.10.11.243)
+Host is up (0.018s latency).
+Not shown: 65518 closed tcp ports (conn-refused)
+PORT      STATE SERVICE    VERSION
+22/tcp    open  ssh        OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 3eea454bc5d16d6fe2d4d13b0a3da94f (ECDSA)
+|_  256 64cc75de4ae6a5b473eb3f1bcfb4e394 (ED25519)
+80/tcp    open  http       nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Error 401 Unauthorized
+| http-auth: 
+| HTTP/1.1 401 Unauthorized\x0D
+|_  basic realm=ActiveMQRealm
+800/tcp   open  http       nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: 403 Forbidden
+900/tcp   open  http       nginx 1.18.0 (Ubuntu)
+|_http-title: Error 401 Unauthorized
+| http-auth: 
+| HTTP/1.1 401 Unauthorized\x0D
+|_  basic realm=ActiveMQRealm
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+1337/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-title: 403 Forbidden
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+1338/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Index of /
+| http-ls: Volume /
+|   maxfiles limit reached (10)
+| SIZE    TIME               FILENAME
+| -       06-Nov-2023 01:10  bin/
+| -       06-Nov-2023 01:10  bin/X11/
+| 963     17-Feb-2020 14:11  bin/NF
+| 129576  27-Oct-2023 11:38  bin/VGAuthService
+| 51632   07-Feb-2022 16:03  bin/%5B
+| 35344   19-Oct-2022 14:52  bin/aa-enabled
+| 35344   19-Oct-2022 14:52  bin/aa-exec
+| 31248   19-Oct-2022 14:52  bin/aa-features-abi
+| 14478   04-May-2023 11:14  bin/add-apt-repository
+| 14712   21-Feb-2022 01:49  bin/addpart
+|_
+1339/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Index of /
+| http-ls: Volume /
+|   maxfiles limit reached (10)
+| SIZE    TIME               FILENAME
+| -       06-Nov-2023 01:10  bin/
+| -       06-Nov-2023 01:10  bin/X11/
+| 963     17-Feb-2020 14:11  bin/NF
+| 129576  27-Oct-2023 11:38  bin/VGAuthService
+| 51632   07-Feb-2022 16:03  bin/%5B
+| 35344   19-Oct-2022 14:52  bin/aa-enabled
+| 35344   19-Oct-2022 14:52  bin/aa-exec
+| 31248   19-Oct-2022 14:52  bin/aa-features-abi
+| 14478   04-May-2023 11:14  bin/add-apt-repository
+| 14712   21-Feb-2022 01:49  bin/addpart
+|_
+1415/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-title: 403 Forbidden
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+1883/tcp  open  mqtt
+| mqtt-subscribe: 
+|   Topics and their most recent payloads: 
+|_    ActiveMQ/Advisory/Consumer/Topic/#: 
+5672/tcp  open  amqp?
+|_amqp-info: ERROR: AQMP:handshake expected header (1) frame, but was 65
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, GetRequest, HTTPOptions, RPCCheck, RTSPRequest, SSLSessionReq, TerminalServerCookie: 
+|     AMQP
+|     AMQP
+|     amqp:decode-error
+|_    7Connection from client using unsupported AMQP attempted
+7000/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-title: 403 Forbidden
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+8161/tcp  open  http       Jetty 9.4.39.v20210325
+|_http-server-header: Jetty(9.4.39.v20210325)
+|_http-title: Error 401 Unauthorized
+| http-auth: 
+| HTTP/1.1 401 Unauthorized\x0D
+|_  basic realm=ActiveMQRealm
+9001/tcp  open  http       nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: 403 Forbidden
+43435/tcp open  tcpwrapped
+61613/tcp open  stomp      Apache ActiveMQ
+| fingerprint-strings: 
+|   HELP4STOMP: 
+|     ERROR
+|     content-type:text/plain
+|     message:Unknown STOMP action: HELP
+|     org.apache.activemq.transport.stomp.ProtocolException: Unknown STOMP action: HELP
+|     org.apache.activemq.transport.stomp.ProtocolConverter.onStompCommand(ProtocolConverter.java:258)
+|     org.apache.activemq.transport.stomp.StompTransportFilter.onCommand(StompTransportFilter.java:85)
+|     org.apache.activemq.transport.TransportSupport.doConsume(TransportSupport.java:83)
+|     org.apache.activemq.transport.tcp.TcpTransport.doRun(TcpTransport.java:233)
+|     org.apache.activemq.transport.tcp.TcpTransport.run(TcpTransport.java:215)
+|_    java.lang.Thread.run(Thread.java:750)
+61614/tcp open  http       Jetty 9.4.39.v20210325
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-server-header: Jetty(9.4.39.v20210325)
+|_http-title: Site doesn't have a title.
+61616/tcp open  apachemq   ActiveMQ OpenWire transport
+| fingerprint-strings: 
+|   NULL: 
+|     ActiveMQ
+|     TcpNoDelayEnabled
+|     SizePrefixDisabled
+|     CacheSize
+|     ProviderName 
+|     ActiveMQ
+|     StackTraceEnabled
+|     PlatformDetails 
+|     Java
+|     CacheEnabled
+|     TightEncodingEnabled
+|     MaxFrameSize
+|     MaxInactivityDuration
+|     MaxInactivityDurationInitalDelay
+|     ProviderVersion 
+|_    5.15.15
+3 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port5672-TCP:V=7.93%I=7%D=11/10%Time=654E6DB3%P=x86_64-pc-linux-gnu%r(G
+SF:etRequest,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19\x02\0\0\0\0S\x10
+SF:\xc0\x0c\x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0\0\0S\x18\xc0S\x0
+SF:1\0S\x1d\xc0M\x02\xa3\x11amqp:decode-error\xa17Connection\x20from\x20cl
+SF:ient\x20using\x20unsupported\x20AMQP\x20attempted")%r(HTTPOptions,89,"A
+SF:MQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19\x02\0\0\0\0S\x10\xc0\x0c\x04\xa
+SF:1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0\0\0S\x18\xc0S\x01\0S\x1d\xc0M\x
+SF:02\xa3\x11amqp:decode-error\xa17Connection\x20from\x20client\x20using\x
+SF:20unsupported\x20AMQP\x20attempted")%r(RTSPRequest,89,"AMQP\x03\x01\0\0
+SF:AMQP\0\x01\0\0\0\0\0\x19\x02\0\0\0\0S\x10\xc0\x0c\x04\xa1\0@p\0\x02\0\0
+SF:`\x7f\xff\0\0\0`\x02\0\0\0\0S\x18\xc0S\x01\0S\x1d\xc0M\x02\xa3\x11amqp:
+SF:decode-error\xa17Connection\x20from\x20client\x20using\x20unsupported\x
+SF:20AMQP\x20attempted")%r(RPCCheck,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0
+SF:\0\x19\x02\0\0\0\0S\x10\xc0\x0c\x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x
+SF:02\0\0\0\0S\x18\xc0S\x01\0S\x1d\xc0M\x02\xa3\x11amqp:decode-error\xa17C
+SF:onnection\x20from\x20client\x20using\x20unsupported\x20AMQP\x20attempte
+SF:d")%r(DNSVersionBindReqTCP,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19
+SF:\x02\0\0\0\0S\x10\xc0\x0c\x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0
+SF:\0\0S\x18\xc0S\x01\0S\x1d\xc0M\x02\xa3\x11amqp:decode-error\xa17Connect
+SF:ion\x20from\x20client\x20using\x20unsupported\x20AMQP\x20attempted")%r(
+SF:DNSStatusRequestTCP,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19\x02\0\
+SF:0\0\0S\x10\xc0\x0c\x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0\0\0S\x
+SF:18\xc0S\x01\0S\x1d\xc0M\x02\xa3\x11amqp:decode-error\xa17Connection\x20
+SF:from\x20client\x20using\x20unsupported\x20AMQP\x20attempted")%r(SSLSess
+SF:ionReq,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19\x02\0\0\0\0S\x10\xc
+SF:0\x0c\x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0\0\0S\x18\xc0S\x01\0
+SF:S\x1d\xc0M\x02\xa3\x11amqp:decode-error\xa17Connection\x20from\x20clien
+SF:t\x20using\x20unsupported\x20AMQP\x20attempted")%r(TerminalServerCookie
+SF:,89,"AMQP\x03\x01\0\0AMQP\0\x01\0\0\0\0\0\x19\x02\0\0\0\0S\x10\xc0\x0c\
+SF:x04\xa1\0@p\0\x02\0\0`\x7f\xff\0\0\0`\x02\0\0\0\0S\x18\xc0S\x01\0S\x1d\
+SF:xc0M\x02\xa3\x11amqp:decode-error\xa17Connection\x20from\x20client\x20u
+SF:sing\x20unsupported\x20AMQP\x20attempted");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port61613-TCP:V=7.93%I=7%D=11/10%Time=654E6DAE%P=x86_64-pc-linux-gnu%r(
+SF:HELP4STOMP,27F,"ERROR\ncontent-type:text/plain\nmessage:Unknown\x20STOM
+SF:P\x20action:\x20HELP\n\norg\.apache\.activemq\.transport\.stomp\.Protoc
+SF:olException:\x20Unknown\x20STOMP\x20action:\x20HELP\n\tat\x20org\.apach
+SF:e\.activemq\.transport\.stomp\.ProtocolConverter\.onStompCommand\(Proto
+SF:colConverter\.java:258\)\n\tat\x20org\.apache\.activemq\.transport\.sto
+SF:mp\.StompTransportFilter\.onCommand\(StompTransportFilter\.java:85\)\n\
+SF:tat\x20org\.apache\.activemq\.transport\.TransportSupport\.doConsume\(T
+SF:ransportSupport\.java:83\)\n\tat\x20org\.apache\.activemq\.transport\.t
+SF:cp\.TcpTransport\.doRun\(TcpTransport\.java:233\)\n\tat\x20org\.apache\
+SF:.activemq\.transport\.tcp\.TcpTransport\.run\(TcpTransport\.java:215\)\
+SF:n\tat\x20java\.lang\.Thread\.run\(Thread\.java:750\)\n\0\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port61616-TCP:V=7.93%I=7%D=11/10%Time=654E6DAE%P=x86_64-pc-linux-gnu%r(
+SF:NULL,140,"\0\0\x01<\x01ActiveMQ\0\0\0\x0c\x01\0\0\x01\*\0\0\0\x0c\0\x11
+SF:TcpNoDelayEnabled\x01\x01\0\x12SizePrefixDisabled\x01\0\0\tCacheSize\x0
+SF:5\0\0\x04\0\0\x0cProviderName\t\0\x08ActiveMQ\0\x11StackTraceEnabled\x0
+SF:1\x01\0\x0fPlatformDetails\t\0\x04Java\0\x0cCacheEnabled\x01\x01\0\x14T
+SF:ightEncodingEnabled\x01\x01\0\x0cMaxFrameSize\x06\0\0\0\0\x06@\0\0\0\x1
+SF:5MaxInactivityDuration\x06\0\0\0\0\0\0u0\0\x20MaxInactivityDurationInit
+SF:alDelay\x06\0\0\0\0\0\0'\x10\0\x0fProviderVersion\t\0\x075\.15\.15");
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 53.62 seconds

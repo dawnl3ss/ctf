@@ -1,0 +1,16 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-11-10 21:13 CET
+Stats: 0:00:23 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 11.00% done; ETC: 21:16 (0:03:06 remaining)
+Stats: 0:00:56 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 27.50% done; ETC: 21:16 (0:02:28 remaining)
+Stats: 0:02:46 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 82.00% done; ETC: 21:16 (0:00:36 remaining)
+Stats: 0:03:10 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 93.50% done; ETC: 21:16 (0:00:13 remaining)
+Nmap scan report for magician (10.10.11.217)
+Host is up.
+rDNS record for 10.10.11.217: topology.htb
+All 1000 scanned ports on magician (10.10.11.217) are in ignored states.
+Not shown: 1000 filtered tcp ports (no-response)
+
+Nmap done: 1 IP address (1 host up) scanned in 203.12 seconds
