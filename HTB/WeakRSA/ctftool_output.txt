@@ -1,0 +1,43 @@
+['../key.pub']
+
+[*] Testing key ../key.pub.
+attack initialized...
+attack initialized...
+[*] Performing factordb attack on ../key.pub.
+[!] internal error :-(
+[+] Time elapsed: 1.0997 sec.
+[*] Performing fibonacci_gcd attack on ../key.pub.
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 9999/9999 [00:00<00:00, 131048.65it/s]
+[+] Time elapsed: 0.0903 sec.
+[*] Performing lucas_gcd attack on ../key.pub.
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 9999/9999 [00:00<00:00, 131506.01it/s]
+[+] Time elapsed: 0.0768 sec.
+[*] Performing mersenne_primes attack on ../key.pub.
+ 27%|████████████████████████████████████▏                                                                                               | 14/51 [00:00<00:00, 295076.66it/s]
+[+] Time elapsed: 0.0005 sec.
+[*] Performing nonRSA attack on ../key.pub.
+[+] Time elapsed: 0.0011 sec.
+[*] Performing pastctfprimes attack on ../key.pub.
+[+] loading prime list file data/pastctfprimes.txt...
+ 77%|██████████████████████████████████████████████████████████████████████████████████████████████████████▏                              | 93/121 [00:00<00:00, 6411.52it/s]
+[*] Attack success with pastctfprimes method !
+[+] Total time elapsed min,max,avg: 0.0005/1.0997/0.2537 sec.
+
+Results for ../key.pub:
+
+Private key :
+-----BEGIN RSA PRIVATE KEY-----
+MIICOQIBAAKBgQMwO3kPsUnaNAbUlaubn7ip4pNEXjvUOxjvLwUhtybr6Ng4undL
+tSQPCPf7ygoUKh1KYeqXMpTmhKjRos3xioTy23CZuOl3WIsLiRKSVYyqBc9d8rxj
+NMXuUIOiNO38ealcR4p44zfHI66INPuKmTG3RQP/6p5hv1PYcWmErEeDewKBgGEX
+xgRIsTlFGrW2C2JXoSvakMCWD60eAH0W2PpDqlqqOFD8JA5UFK0roQkOjhLWSVu8
+c6DLpWJQQlXHPqP702qIg/gx2o0bm4EzrCEJ4gYo6Ax+U7q6TOWhQpiBHnC0ojE8
+kUoqMhfALpUaruTJ6zmj8IA1e1M6bMqVF8srlb/NAiBhwngxi+Cbie3YBogNzGJV
+h10vAgw+i7cQqiiwEiPFNQJBAhfZb0hu0nborNkL/kc+xWqDFa24/mE3w4t/eiGG
+iOvU2KAnBzqjrx20pJxoRDkDfe+Y2m5aoq5x5xPQcRXG4TkCQQGF86+a9ipB1Yxn
+GTQi0QKF68yY1YW+5J2ROaBGKJxCPodoEErdW2r792FcYXIrE1bja5YEKOfHhm+H
+PXbWNm5TAiBhwngxi+Cbie3YBogNzGJVh10vAgw+i7cQqiiwEiPFNQIgYcJ4MYvg
+m4nt2AaIDcxiVYddLwIMPou3EKoosBIjxTUCQQExdOu7+RKDsSDEZFFsk+eCEPUA
+JYOrDogZ/mYsEtseG7k23DtQSWQAj0KpJHYHtUWvVkqoA5NhE97C1ddgtUi6
+-----END RSA PRIVATE KEY-----
+
