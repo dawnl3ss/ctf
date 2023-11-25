@@ -1,0 +1,16 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-11-25 17:01 CET
+Stats: 0:01:23 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 65.87% done; ETC: 17:03 (0:00:44 remaining)
+Stats: 0:01:53 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 98.58% done; ETC: 17:03 (0:00:02 remaining)
+Nmap scan report for jerry.htb (10.10.10.95)
+Host is up (0.019s latency).
+Not shown: 65534 filtered tcp ports (no-response)
+PORT     STATE SERVICE VERSION
+8080/tcp open  http    Apache Tomcat/Coyote JSP engine 1.1
+|_http-server-header: Apache-Coyote/1.1
+|_http-favicon: Apache Tomcat
+|_http-title: Apache Tomcat/7.0.88
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 126.13 seconds
