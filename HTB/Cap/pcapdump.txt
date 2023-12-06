@@ -1,0 +1,25 @@
+220 (vsFTPd 3.0.3)
+USER nathan
+331 Please specify the password.
+PASS Buck3tH4TF0RM3!
+230 Login successful.
+SYST
+215 UNIX Type: L8
+PORT 192,168,196,1,212,140
+200 PORT command successful. Consider using PASV.
+LIST
+150 Here comes the directory listing.
+226 Directory send OK.
+PORT 192,168,196,1,212,141
+200 PORT command successful. Consider using PASV.
+LIST -al
+150 Here comes the directory listing.
+226 Directory send OK.
+TYPE I
+200 Switching to Binary mode.
+PORT 192,168,196,1,212,143
+200 PORT command successful. Consider using PASV.
+RETR notes.txt
+550 Failed to open file.
+QUIT
+221 Goodbye.
