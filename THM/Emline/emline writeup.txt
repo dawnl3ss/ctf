@@ -1,0 +1,8 @@
+/* Database configuration. */
+define('DATABASE_USER', 'james');
+define('DATABASE_PASS', 'ng6pUFvsGNtw');
+define('DATABASE_HOST', 'localhost');
+define('DATABASE_NAME', 'opencats');
+
+
+pretonnevippasempre

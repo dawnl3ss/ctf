@@ -1,0 +1,107 @@
+┌─[amanara@parrot]─[~/Desktop]
+└──╼ [★]$ nmap -A -p- -Pn athena.thm
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-09-18 09:57 CEST
+Nmap scan report for athena.thm (10.10.32.143)
+Host is up (0.078s latency).
+Not shown: 65531 closed tcp ports (conn-refused)
+PORT    STATE SERVICE     VERSION
+22/tcp  open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 3bc8f813e0cb42600df64cdc55d83bed (RSA)
+|   256 1f42e1c3a5172a38693e9b736dcd5633 (ECDSA)
+|_  256 7a67598d37c56729e853e81edfb0c71e (ED25519)
+80/tcp  open  http        Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Athena - Gods of olympus
+139/tcp open  netbios-ssn Samba smbd 4.6.2
+445/tcp open  netbios-ssn Samba smbd 4.6.2
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_nbstat: NetBIOS name: ROUTERPANEL, NetBIOS user: <unknown>, NetBIOS MAC: 000000000000 (Xerox)
+| smb2-security-mode: 
+|   311: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2023-09-18T07:59:08
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 75.84 seconds
+
+
+
+
+Let's try to connect to samba :
+
+┌─[amanara@parrot]─[~/Desktop]
+└──╼ [★]$ smbclient -L athena.thm
+Password for [WORKGROUP\amanara]:
+Anonymous login successful
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	public          Disk      
+	IPC$            IPC       IPC Service (Samba 4.15.13-Ubuntu)
+SMB1 disabled -- no workgroup available
+
+
+Ok it allows anonymous login, good. Let's dive in public folder :
+
+┌─[amanara@parrot]─[~/Desktop]
+└──╼ [★]$ smbclient //athena.thm/public
+Password for [WORKGROUP\amanara]:
+Anonymous login successful
+Try "help" to get a list of possible commands.
+smb: \>
+
+Alright, it worked ! Let's see what we have here.
+
+smb: \> ls
+  .                                   D        0  Mon Apr 17 02:54:43 2023
+  ..                                  D        0  Mon Apr 17 02:54:05 2023
+  msg_for_administrator.txt           N      253  Sun Apr 16 20:59:44 2023
+
+		19947120 blocks of size 1024. 9689820 blocks available
+
+smb: \> get msg_for_administrator.txt
+getting file \msg_for_administrator.txt of size 253 as msg_for_administrator.txt (0,2 KiloBytes/sec) (average 0,2 KiloBytes/sec)
+
+
+We found the only interesting file here. Now i will display its content on my machine :
+
+┌─[amanara@parrot]─[~/Desktop]
+└──╼ [★]$ cat msg_for_administrator.txt 
+
+Dear Administrator,
+
+I would like to inform you that a new Ping system is being developed and I left the corresponding application in a specific path, which can be accessed through the following address: /myrouterpanel
+
+Yours sincerely,
+
+Athena
+Intern
+
+
+Okay, so, we know that there is a folder which is named /myrouterpanel on the webserver. Let's take a look :
+
+<insert image of page>
+
+After testing some ipaddress such as google.com, 127.0.0.1 etc, I saw that the ping result was very similar to ping package avalaible on linux.
+I decided to use burpsuite to examine the http post request :
+
+<insert image of burpsuite>
+
+Unfortunately, most of the operators to execute commands are escaped. But let me introduce you to the line return bypass.
+This technic is about adding '%0A' to operate a line return and executing two differents commands in bash. Theses chars are not filtered by the sanitized module. Let's take advantage of it :
+
+<insert image of burp with bypass>
+
+Here, we've taken advantage of the bad filtering to execute 'ls -la' command after the ping one. And it worked perfectly. Now let's setup a reverse shell.
+
+Now that I have a reverse shell, I stabilized it with python3 :
+
+$ python3 -c 'import pty; pty.spawn("/bin/bash")'
+www-data@routerpanel:/$
+
+After some reearch, I found a secret '...' folder hidden in /mnt directory.
