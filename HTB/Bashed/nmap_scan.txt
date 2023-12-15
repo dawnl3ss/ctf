@@ -1,0 +1,15 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-12-15 13:11 CET
+Stats: 0:00:14 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 18.49% done; ETC: 13:12 (0:01:02 remaining)
+Stats: 0:01:21 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 78.01% done; ETC: 13:13 (0:00:23 remaining)
+Nmap scan report for bashed.htb (10.10.10.68)
+Host is up (0.052s latency).
+Not shown: 65534 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+|_http-title: Arrexel's Development Site
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 118.22 seconds

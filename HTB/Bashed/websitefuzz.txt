@@ -1,0 +1,35 @@
+└──╼ [★]$ ffuf -u http://bashed.htb/FUZZ -w /security/tools/Kharon/ressources/wordlists/dir-enum-int-3.txt -c -t 100 -e .php
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.4.1-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://bashed.htb/FUZZ
+ :: Wordlist         : FUZZ: /security/tools/Kharon/ressources/wordlists/dir-enum-int-3.txt
+ :: Extensions       : .php 
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 100
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+images                  [Status: 301, Size: 309, Words: 20, Lines: 10, Duration: 45ms]
+uploads                 [Status: 301, Size: 310, Words: 20, Lines: 10, Duration: 29ms]
+php                     [Status: 301, Size: 306, Words: 20, Lines: 10, Duration: 32ms]
+css                     [Status: 301, Size: 306, Words: 20, Lines: 10, Duration: 21ms]
+dev                     [Status: 301, Size: 306, Words: 20, Lines: 10, Duration: 36ms]
+js                      [Status: 301, Size: 305, Words: 20, Lines: 10, Duration: 50ms]
+config.php              [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 32ms]
+fonts                   [Status: 301, Size: 308, Words: 20, Lines: 10, Duration: 40ms]
+.php                    [Status: 403, Size: 289, Words: 22, Lines: 12, Duration: 155ms]
+                        [Status: 200, Size: 7743, Words: 2956, Lines: 162, Duration: 155ms]
+server-status           [Status: 403, Size: 298, Words: 22, Lines: 12, Duration: 50ms]
+
