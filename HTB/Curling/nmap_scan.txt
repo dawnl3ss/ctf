@@ -1,0 +1,20 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2023-12-16 10:41 CET
+Stats: 0:00:02 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 6.27% done; ETC: 10:41 (0:00:30 remaining)
+Nmap scan report for curling.htb (10.10.10.150)
+Host is up (0.020s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 8ad169b490203ea7b65401eb68303aca (RSA)
+|   256 9f0bc2b20bad8fa14e0bf63379effb43 (ECDSA)
+|_  256 c12a3544300c5b566a3fa5cc6466d9a9 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-generator: Joomla! - Open Source Content Management
+|_http-title: Home
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 23.09 seconds
