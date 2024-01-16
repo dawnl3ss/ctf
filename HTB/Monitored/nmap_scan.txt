@@ -1,0 +1,28 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2024-01-16 12:34 CET
+Nmap scan report for monitored.htb (10.10.11.248)
+Host is up (0.017s latency).
+Not shown: 65530 closed tcp ports (conn-refused)
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh        OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+| ssh-hostkey: 
+|   3072 61e2e7b41b5d46dc3b2f9138e66dc5ff (RSA)
+|   256 2973c5a58daa3f60a94aa3e59f675c93 (ECDSA)
+|_  256 6d7af9eb8e45c2026ad58d4db3a3376f (ED25519)
+80/tcp   open  http       Apache httpd 2.4.56
+|_http-title: Did not follow redirect to https://nagios.monitored.htb/
+|_http-server-header: Apache/2.4.56 (Debian)
+389/tcp  open  ldap       OpenLDAP 2.2.X - 2.3.X
+443/tcp  open  ssl/http   Apache httpd 2.4.56
+|_http-title: Nagios XI
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName=nagios.monitored.htb/organizationName=Monitored/stateOrProvinceName=Dorset/countryName=UK
+| Not valid before: 2023-11-11T21:46:55
+|_Not valid after:  2297-08-25T21:46:55
+| tls-alpn: 
+|_  http/1.1
+|_http-server-header: Apache/2.4.56 (Debian)
+5667/tcp open  tcpwrapped
+Service Info: Hosts: nagios.monitored.htb, 127.0.0.1; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 33.23 seconds
