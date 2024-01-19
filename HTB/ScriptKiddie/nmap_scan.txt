@@ -1,0 +1,25 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2024-01-19 18:25 CET
+Nmap scan report for scriptkiddie.htb (10.10.10.226)
+Host is up (0.017s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 3c656bc2dfb99d627427a7b8a9d3252c (RSA)
+|   256 b9a1785d3c1b25e03cef678d71d3a3ec (ECDSA)
+|_  256 8bcf4182c6acef9180377cc94511e843 (ED25519)
+5000/tcp open  http    Werkzeug httpd 0.16.1 (Python 3.8.5)
+|_http-title: k1d'5 h4ck3r t00l5
+|_http-server-header: Werkzeug/0.16.1 Python/3.8.5
+Aggressive OS guesses: Linux 5.0 (97%), Linux 4.15 - 5.6 (95%), Linux 5.3 - 5.4 (95%), Linux 3.1 (95%), Linux 3.2 (95%), AXIS 210A or 211 Network Camera (Linux 2.6.17) (94%), Linux 2.6.32 (94%), Linux 5.0 - 5.3 (94%), ASUS RT-N56U WAP (Linux 3.4) (93%), Linux 3.16 (93%)
+No exact OS matches for host (test conditions non-ideal).
+Network Distance: 2 hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE (using port 3389/tcp)
+HOP RTT      ADDRESS
+1   20.64 ms 10.10.14.1
+2   20.69 ms scriptkiddie.htb (10.10.10.226)
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 30.02 seconds
