@@ -1,0 +1,10 @@
+Starting Nmap 7.93 ( https://nmap.org ) at 2024-01-22 15:16 CET
+Nmap scan report for shoppy.htb (10.10.11.180)
+Host is up (0.023s latency).
+Not shown: 65532 closed tcp ports (reset)
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+9093/tcp open  copycat
+
+Nmap done: 1 IP address (1 host up) scanned in 17.63 seconds
