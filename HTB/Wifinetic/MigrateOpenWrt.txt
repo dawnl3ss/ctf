@@ -1,0 +1,74 @@
+  +-------------------------------------------------------+
+  |             Replace OpenWRT with Debian                |
+  +-------------------------------------------------------+
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |        Evaluate Current OpenWRT Setup        |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |         Plan and Prepare the Migration       |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Inventory current hardware and software   |    |
+  |  |   - Identify dependencies and customizations  |    |
+  |  |   - Research Debian-compatible alternatives   |    |
+  |  |   - Backup critical configurations and data   |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |            Install Debian on Devices         |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Obtain latest Debian release              |    |
+  |  |   - Check hardware compatibility              |    |
+  |  |   - Flash/install Debian on each device       |    |
+  |  |   - Verify successful installations           |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |         Set Up Networking and Services       |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Configure network interfaces              |    |
+  |  |   - Install and configure Wifi drivers        |    |
+  |  |   - Set up DHCP, DNS, and routing             |    |
+  |  |   - Install firewall and security measures    |    |
+  |  |   - Set up any additional services needed     |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |           Migrate Configurations             |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Adapt OpenWRT configurations to Debian    |    |
+  |  |   - Migrate custom settings and scripts       |    |
+  |  |   - Ensure compatibility with new system      |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |          Test and Troubleshoot               |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Test Wifi connectivity and performance    |    |
+  |  |   - Verify all services are functioning       |    |
+  |  |   - Address and resolve any issues            |    |
+  |  |   - Test for security issues with Reaver tool |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  |  +-----------------------------------------------+    |
+  |  |         Monitor and Maintain                 |    |
+  |  +-----------------------------------------------+    |
+  |  |                                               |    |
+  |  |   - Implement regular updates and patches     |    |
+  |  |   - Monitor system health and performance     |    |
+  |  |   - Maintain and optimize the Debian system   |    |
+  |  |                                               |    |
+  |  +-----------------------------------------------+    |
+  |                                                       |
+  +-------------------------------------------------------+

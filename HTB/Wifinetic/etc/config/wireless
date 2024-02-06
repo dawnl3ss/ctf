@@ -1,0 +1,33 @@
+
+config wifi-device 'radio0'
+	option type 'mac80211'
+	option path 'virtual/mac80211_hwsim/hwsim0'
+	option cell_density '0'
+	option channel 'auto'
+	option band '2g'
+	option txpower '20'
+
+config wifi-device 'radio1'
+	option type 'mac80211'
+	option path 'virtual/mac80211_hwsim/hwsim1'
+	option channel '36'
+	option band '5g'
+	option htmode 'HE80'
+	option cell_density '0'
+
+config wifi-iface 'wifinet0'
+	option device 'radio0'
+	option mode 'ap'
+	option ssid 'OpenWrt'
+	option encryption 'psk'
+	option key 'VeRyUniUqWiFIPasswrd1!'
+	option wps_pushbutton '1'
+
+config wifi-iface 'wifinet1'
+	option device 'radio1'
+	option mode 'sta'
+	option network 'wwan'
+	option ssid 'OpenWrt'
+	option encryption 'psk'
+	option key 'VeRyUniUqWiFIPasswrd1!'
+
