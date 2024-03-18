@@ -1,0 +1,12 @@
+Target: 10.10.11.7
+Attacker: 10.10.14.89
+
+
+22:   ssh
+    ==> pas grande chose
+    
+8080:   http-proxy
+
+    - Werkzeug/1.0.1 Python/2.7.18
+    ==> Potentiels failles ?
+    bin
