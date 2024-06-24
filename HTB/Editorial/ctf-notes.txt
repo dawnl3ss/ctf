@@ -1,0 +1,36 @@
+----------------------------------------------
+Machine Name :      Editorial
+Machine IP :        10.10.11.20 - editorial.htb
+Attacker IP :       10.10.14.3
+----------------------------------------------
+
+I obviously added the machine ip address in the /etc/hosts file.
+
+Then I ran an NMAP scan over all the ports :
+
+┌─[dawnl3ss@parrot]─[~/Neptune/Security/CTF/HTB/Editorial]
+└──╼ [★]$ nmap -sV -sC -Pn -p- editorial.htb
+
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-06-20 16:32 CEST
+Nmap scan report for editorial.htb (10.10.11.20)
+Host is up (0.014s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 0d:ed:b2:9c:e2:53:fb:d4:c8:c1:19:6e:75:80:d8:64 (ECDSA)
+|_  256 0f:b9:a7:51:0e:00:d5:7b:5b:7c:5f:bf:2b:ed:53:a0 (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Editorial Tiempo Arriba
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 24.64 seconds
+
+
+dev:dev080217_devAPI!@
+prod\nPassword: 080217_Producti0n_2023!@
+
+user:d47e087016d5fe0ecea01c2de2e73ae2
+root:6c7836bd524083511e5b3be872a5ec4b
